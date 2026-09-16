@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enquiry - Sweet'T Premium Perfumes</title>
+    <meta name="description" content="Send us an enquiry. Get personalized perfume recommendations and custom order information.">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- ===== HEADER / NAVIGATION ===== -->
+    <header class="header">
+        <div class="navbar">
+            <div class="container">
+                <!-- Logo -->
+                <div class="logo">
+                    <h1>Sweet'T</h1>
+                    <p class="tagline">Luxury Perfumes</p>
+                </div>
+
+                <!-- Navigation Menu -->
+                <nav class="nav-menu">
+                    <a href="index.html" class="nav-link">Home</a>
+                    <a href="products.html" class="nav-link">Products</a>
+                    <a href="about_us.html" class="nav-link">About Us</a>
+                    <a href="enquiry.html" class="nav-link active">Enquiry</a>
+                    <a href="contact.html" class="nav-link">Contact</a>
+                </nav>
+
+                <a href="contact.html" class="nav-link active">Contact</a>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== PAGE HERO ===== -->
+    <section class="page-hero">
+        <div class="container">
+            <h1>Send us an Enquiry</h1>
+            <p>We'd love to help you find the perfect fragrance</p>
+        </div>
+    </section>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main>
+        <section class="enquiry-section">
+            <div class="container">
+                <div class="enquiry-wrapper">
+                    <!-- Left Column - Form Info -->
+                    <div class="enquiry-info">
+                        <h2>What can we help you with?</h2>
+                        <p>
+                            Whether you're looking for a personalized recommendation, 
+                            have questions about a specific fragrance, or want to place 
+                            a custom order, we're here to help!
+                        </p>
+
+                        <div class="info-list">
+                            <div class="info-item">
+                                <span class="info-icon"></span>
+                                <div>
+                                    <h4>Product Questions</h4>
+                                    <p>Ask about scent profiles, ingredients, or availability</p>
+                                </div>
+                            </div>
+
+                            <div class="info-item">
+                                <span class="info-icon"></span>
+                                <div>
+                                    <h4>Recommendations</h4>
+                                    <p>Get personalized fragrance suggestions based on your preferences</p>
+                                </div>
+                            </div>
+
+                            <div class="info-item">
+                                <span class="info-icon"></span>
+                                <div>
+                                    <h4>Custom Orders</h4>
+                                    <p>Request special gift packaging or bulk orders</p>
+                                </div>
+                            </div>
+
+                            <div class="info-item">
+                                <span class="info-icon"></span>
+                                <div>
+                                    <h4>Delivery Info</h4>
+                                    <p>Questions about shipping and delivery options</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="response-time">
+                            <p><strong> Response Time:</strong> We'll get back to you within 24 hours</p>
+                        </div>
+                    </div>
+
+                    <!-- Right Column - Form -->
+                    <div class="enquiry-form-wrapper">
+                        <form class="enquiry-form" id="enquiryForm" method="POST" action="#submit">
+                            <!-- Name Field -->
+                            <div class="form-group">
+                                <label for="name">Full Name *</label>
+                                <input 
+                                    type="text" 
+                                    id="name" 
+                                    name="name" 
+                                    required 
+                                    placeholder="Your full name"
+                                >
+                                <span class="error-message" id="nameError"></span>
+                            </div>
+
+                            <!-- Email Field -->
+                            <div class="form-group">
+                                <label for="email">Email Address *</label>
+                                <input 
+                                    type="email" 
+                                    id="email" 
+                                    name="email" 
+                                    required 
+                                    placeholder="your.email@example.com"
+                                >
+                                <span class="error-message" id="emailError"></span>
+                            </div>
+
+                            <!-- Phone Field -->
+                            <div class="form-group">
+                                <label for="phone">Phone Number *</label>
+                                <input 
+                                    type="tel" 
+                                    id="phone" 
+                                    name="phone" 
+                                    required 
+                                    placeholder="+27 78 965 4321"
+                                >
+                                <span class="error-message" id="phoneError"></span>
+                            </div>
+
+                            <!-- Enquiry Type -->
+                            <div class="form-group">
+                                <label for="enquiryType">Enquiry Type *</label>
+                                <select id="enquiryType" name="enquiryType" required>
+                                    <option value="">-- Select an option --</option>
+                                    <option value="recommendation">Get Recommendations</option>
+                                    <option value="product-question">Product Question</option>
+                                    <option value="custom-order">Custom Order</option>
+                                    <option value="delivery">Delivery Information</option>
+                                    <option value="other">Other</option>
+                                </select>
+                                <span class="error-message" id="enquiryTypeError"></span>
+                            </div>
+
+                            <!-- Message Field -->
+                            <div class="form-group">
+                                <label for="message">Message *</label>
+                                <textarea 
+                                    id="message" 
+                                    name="message" 
+                                    rows="6" 
+                                    required 
+                                    placeholder="Tell us more about your enquiry..."
+                                ></textarea>
+                                <span class="error-message" id="messageError"></span>
+                                <p class="character-count"><span id="charCount">0</span>/500</p>
+                            </div>
+
+                            <!-- Preferences -->
+                            <div class="form-group">
+                                <label>What's your preferred contact method?</label>
+                                <div class="radio-group">
+                                    <label class="radio-label">
+                                        <input type="radio" name="contact-method" value="email" checked>
+                                        Email
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="contact-method" value="whatsapp">
+                                        WhatsApp
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="contact-method" value="phone">
+                                        Phone Call
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Checkbox -->
+                            <div class="form-group checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="newsletter" value="yes">
+                                    Subscribe me to Sweet'T updates and new arrivals
+                                </label>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" class="submit-btn">Send Enquiry</button>
+
+                            <!-- Success Message -->
+                            <div class="success-message" id="successMessage" style="display: none;">
+                                <p> Thank you! Your enquiry has been sent successfully. We'll be in touch within 24 hours.</p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="faq-section">
+            <div class="container">
+                <h2 class="section-title">Frequently Asked Questions</h2>
+
+                <div class="faq-grid">
+                    <div class="faq-item">
+                        <h4>How long does delivery take?</h4>
+                        <p>Delivery within Mbombela: 2-3 days. Nationwide delivery: 5-7 business days.</p>
+                    </div>
+
+                    <div class="faq-item">
+                        <h4>Can I return a product?</h4>
+                        <p>Yes! Unopened products can be returned within 14 days for a full refund.</p>
+                    </div>
+
+                    <div class="faq-item">
+                        <h4>Do you offer bulk orders?</h4>
+                        <p>Absolutely! Contact us for special pricing on bulk or corporate orders.</p>
+                    </div>
+
+                    <div class="faq-item">
+                        <h4>Can you provide samples?</h4>
+                        <p>Yes! We can provide sample sizes. Contact us via WhatsApp for details.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <!-- Footer Column 1 - About -->
+                <div class="footer-section">
+                    <h3>Sweet'T</h3>
+                    <p>Your destination for premium luxury perfumes.</p>
+                </div>
+
+                <!-- Footer Column 2 - Quick Links -->
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="products.html">Products</a></li>
+                        <li><a href="about_us.html">About Us</a></li>
+                        <li><a href="enquiry.html">Enquiry</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+
+                <!-- Footer Column 3 - Contact Info -->
+                <div class="footer-section">
+                    <h4>Contact Us</h4>
+                    <p>Email: info@sweett.com</p>
+                    <p>WhatsApp: +27 78 965 4321</p>
+                    <p>Location: Mbombela, Mpumalanga</p>
+                </div>
+
+                <!-- Footer Column 4 - Social Links -->
+                <div class="footer-section">
+                    <h4>Follow Us</h4>
+                    <ul>
+                        <li><a href="#">Facebook</a></li>
+                        <li><a href="#">Instagram</a></li>
+                        <li><a href="#">WhatsApp</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Copyright -->
+            <div class="footer-bottom">
+                <p> 2026 Sweet'T Perfumes. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
