@@ -535,10 +535,6 @@ sweet-t-website/
 - **Institution**: Independent Institute of Education (Pty) Ltd
 
 ---
-
-**Ready for Part 3? Let's add JavaScript interactivity!** 
- 
-
 Reference 
 
 Shopify. (2024) How to Start a Perfume Business: 9 Steps to Success. Available at: shopify.com (Accessed: 7 August 2026).   
