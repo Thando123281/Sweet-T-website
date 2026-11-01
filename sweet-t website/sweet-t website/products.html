@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfume Collection in Mbombela | Sweet'T Perfumes</title>
+    <meta name="description" content="Explore affordable luxury perfumes for women, men and everyone at Sweet'T in Mbombela, Mpumalanga. Search our fragrance collection and enquire today.">
+    <meta name="keywords" content="perfumes in Mbombela, affordable perfumes, fragrances Mpumalanga, perfumes for men, perfumes for women, Sweet'T">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- ===== HEADER / NAVIGATION ===== -->
+    <header class="header">
+        <div class="navbar">
+            <div class="container">
+                <!-- Logo -->
+                <div class="logo">
+                    <h1>Sweet'T</h1>
+                    <p class="tagline">Luxury Perfumes</p>
+                </div>
+
+                <!-- Navigation Menu -->
+                <nav class="nav-menu" id="primary-navigation" aria-label="Main navigation">
+                    <a href="index.html" class="nav-link">Home</a>
+                    <a href="products.html" class="nav-link active">Products</a>
+                    <a href="about_us.html" class="nav-link">About Us</a>
+                    <a href="enquiry.html" class="nav-link">Enquiry</a>
+                    <a href="contact.html" class="nav-link">Contact</a>
+                </nav>
+
+                <button class="hamburger" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="primary-navigation">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== PAGE HERO ===== -->
+    <section class="page-hero">
+        <div class="container">
+            <h1>Our Collection</h1>
+            <p>Discover our premium selection of luxury fragrances</p>
+        </div>
+    </section>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main>
+        <section class="products-section">
+            <div class="container">
+                <!-- Product search, category filters and sorting -->
+                <div class="filter-section">
+                    <h2>Find Your Fragrance</h2>
+                    <div class="product-tools">
+                        <label class="product-search-label" for="product-search">Search perfumes</label>
+                        <input id="product-search" class="product-search" type="search" placeholder="Search by perfume name..." autocomplete="off">
+                        <label class="product-search-label" for="product-sort">Sort products</label>
+                        <select id="product-sort" class="product-sort">
+                            <option value="featured">Featured first</option>
+                            <option value="name-asc">Name: A to Z</option>
+                            <option value="price-asc">Price: Low to high</option>
+                            <option value="price-desc">Price: High to low</option>
+                        </select>
+                    </div>
+                    <h3>Filter by Category</h3>
+                    <div class="filter-buttons" role="group" aria-label="Filter perfumes by category">
+                        <button class="filter-btn active" type="button" data-filter="all" aria-pressed="true">All Products</button>
+                        <button class="filter-btn" type="button" data-filter="women" aria-pressed="false">For Women</button>
+                        <button class="filter-btn" type="button" data-filter="men" aria-pressed="false">For Men</button>
+                        <button class="filter-btn" type="button" data-filter="unisex" aria-pressed="false">Unisex</button>
+                    </div>
+                    <p id="product-count" class="product-count" aria-live="polite">Loading perfumes...</p>
+                </div>
+
+                <!-- JavaScript dynamically creates the product cards here -->
+                <div class="products-grid" id="products-grid" aria-live="polite"></div>
+                <p id="no-products" class="no-products" hidden>No perfumes match your search. Try another name or category.</p>
+
+                <!-- Accessible image lightbox -->
+                <div class="lightbox" id="product-lightbox" role="dialog" aria-modal="true" aria-labelledby="lightbox-title" aria-hidden="true" hidden>
+                    <div class="lightbox-content">
+                        <button class="lightbox-close" id="lightbox-close" type="button" aria-label="Close image viewer">&times;</button>
+                        <h2 id="lightbox-title"></h2>
+                        <img id="lightbox-image" src="" alt="">
+                        <p id="lightbox-description"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Enquiry CTA Section -->
+        <section class="cta-section">
+            <div class="container">
+                <h2>Can't Find What You're Looking For?</h2>
+                <p>Get personalized recommendations or ask about custom orders</p>
+                <a href="enquiry.html" class="cta-button">Send an Enquiry</a>
+            </div>
+        </section>
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <!-- Footer Column 1 - About -->
+                <div class="footer-section">
+                    <h3>Sweet'T</h3>
+                    <p>Your destination for premium luxury perfumes.</p>
+                </div>
+
+                <!-- Footer Column 2 - Quick Links -->
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="products.html">Products</a></li>
+                        <li><a href="about_us.html">About Us</a></li>
+                        <li><a href="enquiry.html">Enquiry</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+
+                <!-- Footer Column 3 - Contact Info -->
+                <div class="footer-section">
+                    <h4>Contact Us</h4>
+                    <p>Email: info@sweett.com</p>
+                    <p>WhatsApp: +27 78 965 4321</p>
+                    <p>Location: Mbombela, Mpumalanga</p>
+                </div>
+
+                <!-- Footer Column 4 - Social Links -->
+                <div class="footer-section">
+                    <h4>Follow Us</h4>
+                    <ul>
+                        <li><a href="#">Facebook</a></li>
+                        <li><a href="#">Instagram</a></li>
+                        <li><a href="#">WhatsApp</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Copyright -->
+            <div class="footer-bottom">
+                <p>2026 Sweet'T Perfumes. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="sweet-t website/js/main.js" defer></script>
+</body>
+</html>

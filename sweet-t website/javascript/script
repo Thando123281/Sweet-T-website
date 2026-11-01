@@ -1,0 +1,627 @@
+/* ==========================================================
+   Sweet'T Perfume Store - script.js (Part 3)
+   Vanilla JavaScript, no frameworks. Features:
+   1. Mobile navigation        6. Tabs (About page)
+   2. Scroll animations        7. Accordion (FAQ)
+   3. Dynamic product listing  8. Form validation + AJAX (Enquiry)
+      (search, filter, sort)   9. Contact form -> composed email
+   4. Quick-view modal        10. Interactive Leaflet map
+   5. Image lightbox gallery
+   ========================================================== */
+(function () {
+    'use strict';
+
+    document.documentElement.classList.add('js');
+
+    /* ---------- CONFIG: edit these to match the real business ---------- */
+    const CONFIG = {
+        // Where contact-form emails are addressed
+        CONTACT_EMAIL: 'info@sweet-t.co.za',
+        // Paste a Formspree (or similar) endpoint to really send enquiries,
+        // e.g. 'https://formspree.io/f/abcdwxyz'. Leave '' to simulate sending.
+        FORM_ENDPOINT: '',
+        // Sample delivery options used in the enquiry response (edit!)
+        DELIVERY: {
+            collect:  { label: 'Collect in Mbombela',                 fee: 0,  time: 'ready within 24 hours' },
+            local:    { label: 'Delivery within Mbombela',            fee: 40, time: '1 to 2 working days' },
+            national: { label: 'Delivery elsewhere in South Africa',  fee: 90, time: '3 to 5 working days' }
+        }
+    };
+
+    /* ---------- Product data (sample prices - edit!) ---------- */
+    const PRODUCTS = [
+        { id: 'rose-essence',   name: 'Rose Essence',   category: 'women',  price: 299.99, size: '100ml', stock: true,
+          image: 'images/rose-essence.jpg',   alt: 'Rose Essence perfume bottle',
+          description: 'A sophisticated blend of rose petals and vanilla that captures elegance in every spray.' },
+        { id: 'gold-elegance',  name: 'Gold Elegance',  category: 'unisex', price: 349.99, size: '100ml', stock: true,
+          image: 'images/gold-elegance.jpg',  alt: 'Gold Elegance perfume bottle',
+          description: 'Luxurious gold tones with hints of jasmine create a timeless scent for everyone.' },
+        { id: 'midnight-bliss', name: 'Midnight Bliss', category: 'women',  price: 329.99, size: '100ml', stock: true,
+          image: 'images/midnight-bliss.jpg', alt: 'Midnight Bliss perfume bottle',
+          description: 'Deep, mysterious and captivating. Perfect for evenings and special moments.' },
+        { id: 'fresh-garden',   name: 'Fresh Garden',   category: 'women',  price: 279.99, size: '100ml', stock: true,
+          image: 'images/fresh-garden.jpg',   alt: 'Fresh Garden perfume bottle',
+          description: 'Light, refreshing and energising. A daytime scent like a walk through a blooming garden.' },
+        { id: 'bold-gentleman', name: 'Bold Gentleman', category: 'men',    price: 309.99, size: '100ml', stock: true,
+          image: 'images/bold-gentleman.jpg', alt: 'Bold Gentleman perfume bottle',
+          description: 'Strong, confident and masculine. A powerful fragrance for the modern man.' },
+        { id: 'ocean-breeze',   name: 'Ocean Breeze',   category: 'men',    price: 319.99, size: '100ml', stock: true,
+          image: 'images/ocean-breeze.jpg',   alt: 'Ocean Breeze perfume bottle',
+          description: 'Fresh and crisp like a sea breeze. Ideal for active men who love the outdoors.' },
+        { id: 'cherry-kiss',    name: 'Cherry Kiss',    category: 'women',  price: 289.99, size: '100ml', stock: true,
+          image: 'images/cherry-kiss.jpg',    alt: 'Cherry Kiss perfume bottle',
+          description: 'Sweet and playful with cherry and peach notes. A fruity favourite for young women.' },
+        { id: 'vanilla-dream',  name: 'Vanilla Dream',  category: 'unisex', price: 299.99, size: '100ml', stock: false,
+          image: 'images/vanilla-dream.jpg',  alt: 'Vanilla Dream perfume bottle',
+          description: 'Warm, comforting vanilla with subtle woody notes. A cosy scent for everyone.' }
+    ];
+
+    const CATEGORY_LABELS = { women: 'For Women', men: 'For Men', unisex: 'Unisex' };
+
+    /* ---------- Small helpers ---------- */
+    const $  = (selector, root = document) => root.querySelector(selector);
+    const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+    const money = (n) => 'R' + n.toFixed(2);
+
+    // Tiny DOM builder: el('div', {class: 'x', text: 'hi'}, child1, child2)
+    function el(tag, attrs = {}, ...children) {
+        const node = document.createElement(tag);
+        Object.entries(attrs).forEach(([key, value]) => {
+            if (value === false || value === null || value === undefined) return;
+            if (key === 'class') node.className = value;
+            else if (key === 'text') node.textContent = value;
+            else node.setAttribute(key, value === true ? '' : value);
+        });
+        children.flat().forEach((child) => { if (child) node.append(child); });
+        return node;
+    }
+
+    /* ==========================================================
+       1. MOBILE NAVIGATION
+       ========================================================== */
+    function initNav() {
+        const button = $('.hamburger');
+        const nav = $('#primaryNav');
+        if (!button || !nav) return;
+
+        const setOpen = (open) => {
+            nav.classList.toggle('active', open);
+            button.setAttribute('aria-expanded', String(open));
+        };
+        button.addEventListener('click', () => setOpen(!nav.classList.contains('active')));
+        nav.addEventListener('click', (e) => { if (e.target.closest('a')) setOpen(false); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
+    }
+
+    /* ==========================================================
+       2. SCROLL-REVEAL ANIMATION
+       ========================================================== */
+    function initReveal() {
+        const items = $$('.reveal');
+        if (!items.length) return;
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduce || !('IntersectionObserver' in window)) {
+            items.forEach((item) => item.classList.add('is-visible'));
+            return;
+        }
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.12 });
+        items.forEach((item) => observer.observe(item));
+    }
+
+    /* ==========================================================
+       SHARED: layers (modal + lightbox) with focus handling
+       ========================================================== */
+    let lastFocus = null;
+
+    function openLayer(layer, focusTarget) {
+        lastFocus = document.activeElement;
+        layer.hidden = false;
+        document.body.classList.add('no-scroll');
+        (focusTarget || $('button', layer)).focus();
+    }
+
+    function closeLayer(layer) {
+        layer.hidden = true;
+        document.body.classList.remove('no-scroll');
+        if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
+    }
+
+    function initLayerEvents() {
+        document.addEventListener('click', (e) => {
+            const layer = e.target.closest('.layer');
+            if (!layer) return;
+            if (e.target === layer || e.target.closest('[data-close]')) closeLayer(layer);
+        });
+
+        document.addEventListener('keydown', (e) => {
+            const open = $$('.layer').find((layer) => !layer.hidden);
+            if (!open) return;
+            if (e.key === 'Escape') { closeLayer(open); return; }
+            if (open.id === 'lightbox') {
+                if (e.key === 'ArrowLeft') stepLightbox(-1);
+                if (e.key === 'ArrowRight') stepLightbox(1);
+            }
+            if (e.key === 'Tab') {            // keep keyboard focus inside the layer
+                const focusable = $$('button:not([hidden]), [href], input, select, textarea', open)
+                    .filter((node) => !node.disabled);
+                if (!focusable.length) return;
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+                else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+            }
+        });
+    }
+
+    /* ==========================================================
+       5. LIGHTBOX (built on demand, reused on every page)
+       ========================================================== */
+    const lightbox = { items: [], index: 0, root: null };
+
+    function buildLightbox() {
+        if (lightbox.root) return;
+        lightbox.root = el('div', { class: 'layer lightbox', id: 'lightbox', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Image viewer', hidden: true },
+            el('div', { class: 'lightbox-inner' },
+                el('button', { class: 'layer-close', id: 'lbClose', type: 'button', 'data-close': '', 'aria-label': 'Close image viewer', text: '\u00D7' }),
+                el('button', { class: 'lb-nav lb-prev', id: 'lbPrev', type: 'button', 'aria-label': 'Previous image', text: '\u2039' }),
+                el('figure', { class: 'lb-figure' },
+                    el('img', { id: 'lbImg', src: '', alt: '' }),
+                    el('figcaption', { id: 'lbCaption' })),
+                el('button', { class: 'lb-nav lb-next', id: 'lbNext', type: 'button', 'aria-label': 'Next image', text: '\u203A' }),
+                el('p', { class: 'lb-count', id: 'lbCount', 'aria-live': 'polite' })));
+        document.body.append(lightbox.root);
+        $('#lbPrev').addEventListener('click', () => stepLightbox(-1));
+        $('#lbNext').addEventListener('click', () => stepLightbox(1));
+    }
+
+    function renderLightbox() {
+        const item = lightbox.items[lightbox.index];
+        $('#lbImg').src = item.src;
+        $('#lbImg').alt = item.alt;
+        $('#lbCaption').textContent = item.caption || item.alt;
+        $('#lbCount').textContent = (lightbox.index + 1) + ' / ' + lightbox.items.length;
+        const single = lightbox.items.length < 2;
+        $('#lbPrev').hidden = single;
+        $('#lbNext').hidden = single;
+    }
+
+    function stepLightbox(direction) {
+        const total = lightbox.items.length;
+        if (total < 2) return;
+        lightbox.index = (lightbox.index + direction + total) % total;
+        renderLightbox();
+    }
+
+    function openLightbox(items, index) {
+        buildLightbox();
+        lightbox.items = items;
+        lightbox.index = index;
+        renderLightbox();
+        openLayer(lightbox.root, $('#lbClose'));
+    }
+
+    function initGallery() {
+        const triggers = $$('[data-lightbox]');
+        if (!triggers.length) return;
+        const items = triggers.map((trigger) => {
+            const img = $('img', trigger);
+            return { src: trigger.dataset.full || img.src, alt: img.alt, caption: trigger.dataset.caption || img.alt };
+        });
+        triggers.forEach((trigger, index) => trigger.addEventListener('click', () => openLightbox(items, index)));
+    }
+
+    /* ==========================================================
+       4. QUICK-VIEW MODAL
+       ========================================================== */
+    let modalRoot = null;
+
+    function buildModal() {
+        if (modalRoot) return;
+        modalRoot = el('div', { class: 'layer modal', id: 'productModal', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'modalTitle', hidden: true },
+            el('div', { class: 'modal-box' },
+                el('button', { class: 'layer-close', id: 'modalClose', type: 'button', 'data-close': '', 'aria-label': 'Close quick view', text: '\u00D7' }),
+                el('div', { class: 'modal-grid' },
+                    el('img', { id: 'modalImg', src: '', alt: '', width: '400', height: '400' }),
+                    el('div', { class: 'modal-body' },
+                        el('p', { class: 'product-category', id: 'modalCategory' }),
+                        el('h2', { id: 'modalTitle' }),
+                        el('p', { id: 'modalDescription' }),
+                        el('p', { class: 'product-price', id: 'modalPrice' }),
+                        el('p', { id: 'modalMeta', class: 'modal-meta' }),
+                        el('a', { class: 'cta-button', id: 'modalEnquire', href: 'enquiry.html', text: 'Enquire about this perfume' })))));
+        document.body.append(modalRoot);
+    }
+
+    function openModal(product) {
+        buildModal();
+        $('#modalImg').src = product.image;
+        $('#modalImg').alt = product.alt;
+        $('#modalCategory').textContent = CATEGORY_LABELS[product.category];
+        $('#modalTitle').textContent = product.name;
+        $('#modalDescription').textContent = product.description;
+        $('#modalPrice').textContent = money(product.price);
+        $('#modalMeta').textContent = product.size + ' \u2022 ' + (product.stock ? 'In stock' : 'Available on request');
+        $('#modalEnquire').href = 'enquiry.html?product=' + encodeURIComponent(product.id);
+        openLayer(modalRoot, $('#modalClose'));
+    }
+
+    /* ==========================================================
+       3. DYNAMIC PRODUCT LISTING: search + filter + sort
+       ========================================================== */
+    function initProducts() {
+        const grid = $('#productsGrid');
+        if (!grid) return;
+
+        const state = { filter: 'all', query: '', sort: 'featured' };
+        const countEl = $('#resultCount');
+        const emptyEl = $('#noResults');
+        let visible = [];
+
+        const sorters = {
+            'price-asc':  (a, b) => a.price - b.price,
+            'price-desc': (a, b) => b.price - a.price,
+            'name-asc':   (a, b) => a.name.localeCompare(b.name)
+        };
+
+        function buildCard(product, position) {
+            const image = el('img', { src: product.image, alt: product.alt, width: '400', height: '400', loading: 'lazy', decoding: 'async' });
+            const imageButton = el('button', { class: 'product-image-btn', type: 'button', 'aria-label': 'View larger image of ' + product.name }, image);
+            imageButton.addEventListener('click', () => {
+                const items = visible.map((p) => ({ src: p.image, alt: p.alt, caption: p.name + ' \u2013 ' + money(p.price) }));
+                openLightbox(items, visible.indexOf(product));
+            });
+
+            const quickView = el('button', { class: 'btn-outline', type: 'button', text: 'Quick view' });
+            quickView.addEventListener('click', () => openModal(product));
+
+            const card = el('article', { class: 'product-card', 'data-category': product.category },
+                el('div', { class: 'product-image' }, imageButton),
+                el('div', { class: 'product-info' },
+                    el('h3', { class: 'product-name', text: product.name }),
+                    el('p', { class: 'product-category', text: CATEGORY_LABELS[product.category] }),
+                    el('p', { class: 'product-description', text: product.description }),
+                    el('div', { class: 'product-details' },
+                        el('span', { text: product.size }),
+                        el('span', { class: 'stock ' + (product.stock ? 'in' : 'request'), text: product.stock ? 'In stock' : 'On request' })),
+                    el('p', { class: 'product-price', text: money(product.price) }),
+                    el('div', { class: 'product-actions' },
+                        quickView,
+                        el('a', { class: 'btn-solid', href: 'enquiry.html?product=' + encodeURIComponent(product.id), text: 'Enquire' }))));
+            card.style.animationDelay = Math.min(position, 8) * 60 + 'ms';
+            return card;
+        }
+
+        function render() {
+            grid.replaceChildren(...visible.map(buildCard));
+            countEl.textContent = 'Showing ' + visible.length + ' of ' + PRODUCTS.length + ' perfumes';
+            emptyEl.hidden = visible.length > 0;
+        }
+
+        function apply() {
+            const query = state.query.trim().toLowerCase();
+            visible = PRODUCTS.filter((p) => {
+                const inCategory = state.filter === 'all' || p.category === state.filter;
+                const haystack = (p.name + ' ' + p.description + ' ' + CATEGORY_LABELS[p.category]).toLowerCase();
+                return inCategory && (!query || haystack.includes(query));
+            });
+            if (sorters[state.sort]) visible.sort(sorters[state.sort]);
+            render();
+        }
+
+        $$('.filter-btn').forEach((button) => button.addEventListener('click', () => {
+            state.filter = button.dataset.filter;
+            $$('.filter-btn').forEach((b) => {
+                const active = b === button;
+                b.classList.toggle('active', active);
+                b.setAttribute('aria-pressed', String(active));
+            });
+            apply();
+        }));
+        $('#productSearch').addEventListener('input', (e) => { state.query = e.target.value; apply(); });
+        $('#productSort').addEventListener('change', (e) => { state.sort = e.target.value; apply(); });
+        $('#resetSearch').addEventListener('click', () => {
+            state.query = ''; state.filter = 'all'; state.sort = 'featured';
+            $('#productSearch').value = ''; $('#productSort').value = 'featured';
+            $$('.filter-btn').forEach((b) => {
+                const isAll = b.dataset.filter === 'all';
+                b.classList.toggle('active', isAll);
+                b.setAttribute('aria-pressed', String(isAll));
+            });
+            apply();
+        });
+
+        apply();
+    }
+
+    /* ==========================================================
+       6. TABS (About page)
+       ========================================================== */
+    function initTabs() {
+        $$('[data-tabs]').forEach((root) => {
+            const tabs = $$('[role="tab"]', root);
+            const panels = $$('[role="tabpanel"]', root);
+
+            function select(tab) {
+                tabs.forEach((t) => {
+                    const active = t === tab;
+                    t.setAttribute('aria-selected', String(active));
+                    t.tabIndex = active ? 0 : -1;
+                });
+                panels.forEach((panel) => { panel.hidden = panel.id !== tab.getAttribute('aria-controls'); });
+            }
+
+            tabs.forEach((tab, index) => {
+                tab.addEventListener('click', () => select(tab));
+                tab.addEventListener('keydown', (e) => {
+                    let next = null;
+                    if (e.key === 'ArrowRight') next = tabs[(index + 1) % tabs.length];
+                    if (e.key === 'ArrowLeft') next = tabs[(index - 1 + tabs.length) % tabs.length];
+                    if (e.key === 'Home') next = tabs[0];
+                    if (e.key === 'End') next = tabs[tabs.length - 1];
+                    if (next) { e.preventDefault(); select(next); next.focus(); }
+                });
+            });
+        });
+    }
+
+    /* ==========================================================
+       7. ACCORDION (FAQ)
+       ========================================================== */
+    function initAccordion() {
+        $$('[data-accordion]').forEach((root) => {
+            $$('.accordion-trigger', root).forEach((trigger) => {
+                trigger.addEventListener('click', () => {
+                    const open = trigger.getAttribute('aria-expanded') === 'true';
+                    trigger.setAttribute('aria-expanded', String(!open));
+                    $('#' + trigger.getAttribute('aria-controls')).hidden = open;
+                });
+            });
+        });
+    }
+
+    /* ==========================================================
+       FORM VALIDATION (shared by every form)
+       ========================================================== */
+    const RULES = {
+        name:    (v) => v.length >= 2 || 'Please enter your full name (at least 2 characters).',
+        email:   (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) || 'Please enter a valid email address, e.g. name@example.com.',
+        phone:   (v) => /^(\+27|0)[1-8]\d{8}$/.test(v.replace(/[\s\-()]/g, '')) ||
+                        'Enter a valid South African number, e.g. 072 123 4567 or +27 72 123 4567.',
+        message: (v) => (v.length >= 10 && v.length <= 500) || 'Your message must be between 10 and 500 characters.',
+        quantity:(v) => (/^\d+$/.test(v) && +v >= 1 && +v <= 20) || 'Please enter a quantity between 1 and 20.'
+    };
+
+    function validateField(input) {
+        const group = input.closest('.form-group');
+        const errorEl = $('.error-message', group);
+        const value = input.value.trim();
+        let message = '';
+
+        if (input.required && !value) {
+            message = input.dataset.requiredMessage || 'This field is required.';
+        } else if (value && RULES[input.dataset.validate]) {
+            const result = RULES[input.dataset.validate](value);
+            if (result !== true) message = result;
+        }
+
+        group.classList.toggle('error', Boolean(message));
+        input.setAttribute('aria-invalid', message ? 'true' : 'false');
+        errorEl.textContent = message;
+        return !message;
+    }
+
+    function validateForm(form) {
+        let firstInvalid = null;
+        $$('[data-validate], [required]', form).forEach((field) => {
+            if (!validateField(field) && !firstInvalid) firstInvalid = field;
+        });
+        if (firstInvalid) firstInvalid.focus();
+        return !firstInvalid;
+    }
+
+    function attachLiveValidation(form) {
+        $$('[data-validate], [required]', form).forEach((field) => {
+            field.addEventListener('blur', () => validateField(field));
+            field.addEventListener('input', () => {
+                if (field.closest('.form-group').classList.contains('error')) validateField(field);
+            });
+        });
+        const message = $('textarea', form);
+        const counter = $('[data-char-count]', form);
+        if (message && counter) {
+            const update = () => { counter.textContent = message.value.length; };
+            message.addEventListener('input', update);
+            form.addEventListener('reset', () => setTimeout(update, 0));
+        }
+    }
+
+    function setStatus(box, text, type) {
+        box.textContent = text;
+        box.className = 'form-status ' + type;
+        box.hidden = !text;
+    }
+
+    /* ==========================================================
+       8. ENQUIRY FORM: validation, AJAX submit, cost/availability reply
+       ========================================================== */
+    async function sendForm(data) {
+        if (!CONFIG.FORM_ENDPOINT) {                       // demo mode (no endpoint set)
+            await new Promise((resolve) => setTimeout(resolve, 700));
+            return { simulated: true };
+        }
+        const response = await fetch(CONFIG.FORM_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error('Request failed with status ' + response.status);
+        return response.json();
+    }
+
+    function buildResponse(data) {
+        const product = PRODUCTS.find((p) => p.id === data.product);
+        const heading = el('h3', { text: 'Thank you, ' + data.name.split(' ')[0] + '!' });
+
+        if (!product) {
+            return [heading, el('p', { text: 'We have received your enquiry and will reply to ' + data.email + ' as soon as we can.' })];
+        }
+
+        const qty = parseInt(data.quantity, 10) || 1;
+        const delivery = CONFIG.DELIVERY[data.delivery] || CONFIG.DELIVERY.collect;
+        const subtotal = product.price * qty;
+        const total = subtotal + delivery.fee;
+        const row = (label, value) => [el('dt', { text: label }), el('dd', { text: value })];
+
+        return [
+            heading,
+            el('p', { text: 'Here is a quick summary of what you asked about:' }),
+            el('dl', { class: 'quote-list' },
+                row('Perfume', product.name + ' (' + product.size + ')'),
+                row('Quantity', String(qty)),
+                row('Price', money(product.price) + ' each = ' + money(subtotal)),
+                row('Delivery', delivery.label + (delivery.fee ? ' (' + money(delivery.fee) + ')' : ' (free)') + ', ' + delivery.time),
+                row('Estimated total', money(total)),
+                row('Availability', product.stock ? 'In stock and ready to dispatch' : 'Available on request, please allow 3 to 5 working days')),
+            el('p', { class: 'quote-note', text: 'This is an estimate. We will confirm the final price and availability by ' + (data['contact-method'] || 'email') + '.' })
+        ];
+    }
+
+    function initEnquiry() {
+        const form = $('#enquiryForm');
+        if (!form) return;
+
+        const select = $('#product');
+        PRODUCTS.forEach((p) => select.append(el('option', { value: p.id, text: p.name + ' \u2013 ' + money(p.price) })));
+        const preselected = new URLSearchParams(window.location.search).get('product');
+        if (preselected && PRODUCTS.some((p) => p.id === preselected)) select.value = preselected;
+
+        const status = $('#formStatus');
+        const result = $('#enquiryResponse');
+        const submit = $('button[type="submit"]', form);
+        attachLiveValidation(form);
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            result.hidden = true;
+            if (!validateForm(form)) {
+                setStatus(status, 'Please fix the highlighted fields and try again.', 'error');
+                return;
+            }
+            const data = Object.fromEntries(new FormData(form).entries());
+            setStatus(status, 'Sending your enquiry\u2026', 'info');
+            submit.disabled = true;
+            try {
+                await sendForm(data);
+                result.replaceChildren(...buildResponse(data));
+                result.hidden = false;
+                setStatus(status, 'Your enquiry has been sent successfully.', 'success');
+                form.reset();
+                result.focus();
+            } catch (error) {
+                setStatus(status, 'Sorry, we could not send your enquiry. Please try again or message us on WhatsApp.', 'error');
+            } finally {
+                submit.disabled = false;
+            }
+        });
+    }
+
+    /* ==========================================================
+       9. CONTACT FORM: validate, then compile into an email
+       ========================================================== */
+    function initContact() {
+        const form = $('#contactForm');
+        if (!form) return;
+
+        const status = $('#contactStatus');
+        const preview = $('#emailPreview');
+        attachLiveValidation(form);
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            preview.hidden = true;
+            if (!validateForm(form)) {
+                setStatus(status, 'Please fix the highlighted fields and try again.', 'error');
+                return;
+            }
+            const data = Object.fromEntries(new FormData(form).entries());
+            const typeLabel = $('#messageType option:checked', form).textContent;
+            const subject = typeLabel + ' - message from ' + data.name;
+            const body = [
+                'Hi Sweet\'T team,', '', data.message, '', '---',
+                'Name: ' + data.name,
+                'Email: ' + data.email,
+                'Phone: ' + data.phone
+            ].join('\n');
+            const mailto = 'mailto:' + CONFIG.CONTACT_EMAIL +
+                '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+
+            $('#previewTo').textContent = CONFIG.CONTACT_EMAIL;
+            $('#previewSubject').textContent = subject;
+            $('#previewBody').textContent = body;
+            $('#sendEmail').href = mailto;
+            preview.hidden = false;
+            setStatus(status, 'Your message is ready. Check the email below and press "Open in my email app" to send it.', 'success');
+            preview.focus();
+        });
+    }
+
+    function initNewsletter() {
+        const form = $('#newsletterForm');
+        if (!form) return;
+        const status = $('#newsletterStatus');
+        const input = $('input', form);
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!validateField(input)) { setStatus(status, '', 'error'); return; }
+            setStatus(status, 'Thanks for subscribing! (Demo only: no email list is connected yet.)', 'success');
+            form.reset();
+        });
+    }
+
+    /* ==========================================================
+       10. INTERACTIVE MAP (Leaflet + OpenStreetMap)
+       ========================================================== */
+    function initMap() {
+        const box = $('#leafletMap');
+        if (!box) return;
+        if (typeof window.L === 'undefined') {
+            box.textContent = 'The interactive map could not be loaded. Please use the "Open in Google Maps" link below.';
+            return;
+        }
+        const position = [-25.4753, 30.9694];             // Mbombela - replace with the exact shop location
+        const map = window.L.map(box, { scrollWheelZoom: false }).setView(position, 14);
+        window.L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        window.L.marker(position).addTo(map)
+            .bindPopup('<strong>Sweet\'T Perfume Store</strong><br>Mbombela, Mpumalanga')
+            .openPopup();
+    }
+
+    /* ---------- Footer year ---------- */
+    function initYear() {
+        $$('[data-year]').forEach((node) => { node.textContent = new Date().getFullYear(); });
+    }
+
+    /* ---------- Start everything ---------- */
+    initNav();
+    initReveal();
+    initLayerEvents();
+    initGallery();
+    initProducts();
+    initTabs();
+    initAccordion();
+    initEnquiry();
+    initContact();
+    initNewsletter();
+    initMap();
+    initYear();
+})();
